@@ -263,7 +263,7 @@ print("Metro groups created.")
 print(f"Overall memory consumption in GB: {df.memory_usage(deep=True).sum()/(1024**3)}")
 print(f"Shape: {df.shape}")
 
-# Census divisions
+# Census divisions (9)
 census_divisions = {
     1: 'pac', 2: 'esc', 3: 'wsc', 4: 'mnt', 5: 'nen', 
     6: 'sat', 7: 'wnc', 8: 'enc', 9: 'mat'
@@ -273,8 +273,16 @@ print("Census divisions created.")
 print(f"Overall memory consumption in GB: {df.memory_usage(deep=True).sum()/(1024**3)}")
 print(f"Shape: {df.shape}")
 
+# 48GB memory consumed here; drop already-used columns before proceeding
+df.drop(['age76', 'female76', 'industry76', 'educ92', 
+         'occupation76', 'lfdetail94', 'race76', 
+         'metstat78', 'censusdiv76'], axis=1, inplace=True)
+print("Columns dropped.")
+print(f"Overall memory consumption in GB: {df.memory_usage(deep=True).sum()/(1024**3)}")
+print(f"Shape: {df.shape}")
+
 # Average wage quartiles
-condition = (df['wagegrowthtracker83'].notna()) | df['_year'].isin([1995, 1996, 1985, 1986])
+condition = (df['wagegrowthtracker83'].notna()) | df['year'].isin([1995, 1996, 1985, 1986])
 df['wage_hr_avg'] = (df['wageperhrclean82'] + df['wageperhrclean82_tm12']) / 2
 df.loc[~condition, 'wage_hr_avg'] = pd.NA
 for quantile in [25, 50, 75]:
