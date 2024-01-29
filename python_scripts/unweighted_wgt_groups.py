@@ -30,10 +30,15 @@ cadre_df.rename(columns={'wagegrowthtracker83': 'wgt'}, inplace=True)
 print("Reading WGT groups data...")
 wgt_groups_df = pd.read_parquet(f"{rawdatapath}/WGT_groups.parquet")
 
+# Summary statistics of groups; make sure first script is error-free
+print(wgt_groups_df.describe())
+
 # Merge the datasets
 print("Merging datasets...")
 df = cadre_df.merge(wgt_groups_df, on=['personid', 'date'], how='left')
 print("Merge successful.")
+print(f"Overall memory consumption in GB: {df.memory_usage(deep=True).sum()/(1024**3)}")
+print(f"Shape: {df.shape}")
 
 # Create date variables
 df['year'] = df['date'].dt.year
@@ -131,6 +136,8 @@ df['wgt_yhr'] = df['wgt'].where(df['hrlygroup'] == 'Hourly')
 df['wgt_nhr'] = df['wgt'].where(df['hrlygroup'] == 'Non-Hourly')
 
 print("Time series variables created.")
+print(f"Overall memory consumption in GB: {df.memory_usage(deep=True).sum()/(1024**3)}")
+print(f"Shape: {df.shape}")
 
 # Filter, then save unweighted individual level wgt observations for various cuts
 columns_to_keep = ['personid', 'year', 'month', 'date_monthly', 'recession76'] + \
@@ -218,6 +225,8 @@ aggregations = {
 print("Performing aggregations...")
 collapsed_df = df.groupby(['date_monthly', 'year', 'month']).agg(aggregations)
 print("Aggregations done.")
+print(f"Overall memory consumption in GB: {df.memory_usage(deep=True).sum()/(1024**3)}")
+print(f"Shape: {df.shape}")
 
 # Reset the index to flatten the DataFrame structure
 collapsed_df.reset_index(inplace=True)
@@ -259,6 +268,10 @@ for var in variables:
     collapsed_df[f'{var}_3mma'] = collapsed_df[var].rolling(window=3, min_periods=1).mean()
     # Calculate 12-month moving average
     collapsed_df[f'{var}_12mma'] = collapsed_df[var].rolling(window=12, min_periods=1).mean()
+    print(f"Moving averages created for {var}")
+    print(f"Overall memory consumption in GB: {df.memory_usage(deep=True).sum()/(1024**3)}")
+    print(f"Shape: {df.shape}")
+
 
 # Define special conditions for exclusion
 special_conditions_3mma = [
@@ -284,6 +297,7 @@ for condition in special_conditions_3mma:
 for condition in special_conditions_12mma:
     for var in variables:
         collapsed_df.loc[condition, f'{var}_12mma'] = pd.NA
+print("Special conditions applied.")
 
 columns_to_keep = ['date', 'year', 'month', 'date_monthly', 'wgt_raw'] + \
                   [col for col in collapsed_df.columns if '3mma' in col or '12mma' in col] + \
