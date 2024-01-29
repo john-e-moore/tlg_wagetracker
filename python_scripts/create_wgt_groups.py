@@ -258,6 +258,7 @@ conditions = [
     df['metstat78'] == 1,
     df['metstat78'] == 2
 ]
+choices = ['MSA', 'NonMSA']
 df['msagroup'] = np.select(conditions, choices, default=pd.NA)
 print("Metro groups created.")
 print(f"Overall memory consumption in GB: {df.memory_usage(deep=True).sum()/(1024**3)}")
