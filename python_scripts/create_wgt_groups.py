@@ -18,7 +18,8 @@ columns = [
     'employer89', 'occupation76', 'industry76', 'sameemployer94', 'sameactivities94',
     'recession76', 'personid', 'wageperhr82', 'wageperhr82_tm12', 'wagegrowthtracker83', 'date',
     'age76', 'female76', 'paidhrly82_tm12', 'occupation76_tm12', 'industry76_tm12',
-    'sameemployer94_tm1', 'sameemployer94_tm2', 'sameactivities94_tm1', 'sameactivities94_tm2'
+    'sameemployer94_tm1', 'sameemployer94_tm2', 'sameactivities94_tm1', 'sameactivities94_tm2',
+    'lfdetail94_tm12'
 ]
 filters = [
     ('date', '>', pd.to_datetime("1982-01-01")),
