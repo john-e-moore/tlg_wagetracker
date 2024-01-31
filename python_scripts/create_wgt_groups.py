@@ -16,8 +16,9 @@ processeddatapath = "/home/ec2-user/tlg_wagetracker/data"
 columns = [
     'paidhrly82', 'metstat78', 'censusdiv76', 'lfdetail94', 'educ92', 'race76',
     'employer89', 'occupation76', 'industry76', 'sameemployer94', 'sameactivities94',
-    'recession76', 'personid', 'wageperhrclean82', 'wagegrowthtracker83', 'date',
-    'age76', 'female76', 'paidhrly82_tm12'
+    'recession76', 'personid', 'wageperhr82', 'wageperhr82_tm12', 'wagegrowthtracker83', 'date',
+    'age76', 'female76', 'paidhrly82_tm12', 'occupation76_tm12', 'industry76_tm12',
+    'sameemployer94_tm1', 'sameemployer94_tm2', 'sameactivities94_tm1', 'sameactivities94_tm2'
 ]
 filters = [
     ('date', '>', pd.to_datetime("1982-01-01")),
@@ -81,13 +82,23 @@ print(f"Overall memory consumption in GB: {df.memory_usage(deep=True).sum()/(102
 print(f"Shape: {df.shape}")
 print("Processing data...")
 
+"""
 ################################################################################
 # Lag creation
 ################################################################################
 df.sort_values(['personid', 'date_monthly'], inplace=True)
 
 # 12-month lags
-lag_vars_12 = ['lfdetail94', 'occupation76', 'industry76', 'wageperhrclean82']
+# Since there are missing records, we can't use .shift(12)
+# Using self-join instead
+lag_vars_12 = ['lfdetail94', 'occupation76', 'industry76', 'wageperhr82']
+df['lag_12_months'] = df['year'] - 1
+lagged_12_months_df = df.merge(
+    df, 
+    left_on=['personid', 'month', 'lag_year'],
+    right_on=['personid', 'month', 'year'],
+    suffixes=('', '_tm12')
+) 
 for var in lag_vars_12:
     df[var + '_tm12'] = df.groupby('personid')[var].shift(12)
 # 1 and 2-month lags
@@ -98,6 +109,7 @@ for var in lag_vars_1_and_2:
 print("Lags created.")
 print(f"Overall memory consumption in GB: {df.memory_usage(deep=True).sum()/(1024**3)}")
 print(f"Shape: {df.shape}")
+"""
 
 ################################################################################
 # Group creation
@@ -283,8 +295,9 @@ print(f"Overall memory consumption in GB: {df.memory_usage(deep=True).sum()/(102
 print(f"Shape: {df.shape}")
 
 # Average wage quartiles
+# wagegrowthtracker83 not null means that both wageperhr are not null
 condition = (df['wagegrowthtracker83'].notna()) | df['year'].isin([1995, 1996, 1985, 1986])
-df['wage_hr_avg'] = (df['wageperhrclean82'] + df['wageperhrclean82_tm12']) / 2
+df['wage_hr_avg'] = (df['wageperhr82'] + df['wageperhr82_tm12']) / 2
 df.loc[~condition, 'wage_hr_avg'] = pd.NA
 for quantile in [25, 50, 75]:
     df[f'p{quantile}_a'] = df.groupby('date_monthly')['wage_hr_avg'].transform(lambda x: x.quantile(quantile / 100.0))
