@@ -1,6 +1,6 @@
 create table wgt_groups as
 with 
-	base as (
+	cps as (
 		select 
 			personid
 			, date
@@ -40,36 +40,36 @@ with
 	/* Wage quartiles */
 	ranked_wages as (
 	    select
-	        date_monthly,
-	        wageperhr82,
-	        ntile(4) over (
+	        date_monthly
+	        , wageperhr82
+	        , ntile(4) over (
 	            partition by date_monthly
 	            order by wageperhr82
 	        ) as quartile
-	    from base
+	    from cps
 	    where wageperhr82 is not null
 	),
 	wage_quartiles as (
 		select
-		    date_monthly,
-		    quartile,
-		    min(wageperhr82) as quartile_start,
-		    max(wageperhr82) as quartile_end
+		    date_monthly
+		    , quartile
+		    , min(wageperhr82) as quartile_start
+		    , max(wageperhr82) as quartile_end
 		from ranked_wages
 		group by date_monthly, quartile
 	),
 	wage_groups as (
 		select 
-			b.personid
-			, b.date_monthly
-			, b.wageperhr82
+			c.personid
+			, c.date_monthly
+			, c.wageperhr82
 			, case
-				when b.wageperhr82 between w.quartile_start and w.quartile_end
+				when c.wageperhr82 between w.quartile_start and w.quartile_end
 				then w.quartile
 				else null
 			end as wagegroup
-		from base b
-		join wage_quartiles w on b.date_monthly = w.date_monthly
+		from cps c
+		join wage_quartiles w on c.date_monthly = w.date_monthly
 	),
     wage_groups_trimmed as (
     	select *
@@ -77,7 +77,7 @@ with
     	where wagegroup is not null
     ),
 	/* Create all groups */
-	main as (
+	groups as (
 		select 
 			personid
 			, date
@@ -164,27 +164,27 @@ with
 				when censusdiv76 == 8 then 'enc'
 				when censusdiv76 == 9 then 'mat'
 			end as cdivgroup
-		from base
+		from cps
 	)
 select
-	m.personid
-	, m.date
-	, m.hrlygroup
-	, m.jstayergroup
-	, m.agegroup
-	, m.gendergroup
-	, m.secgroup
-	, m.edgroup3
-	, m.edgroup2
-	, m.occgroup
-	, m.ftptgroup
-	, m.skillgroup
-	, m.indgroup
-	, m.racegroup
-	, m.msagroup
+	g.personid
+	, g.date
+	, g.hrlygroup
+	, g.jstayergroup
+	, g.agegroup
+	, g.gendergroup
+	, g.secgroup
+	, g.edgroup3
+	, g.edgroup2
+	, g.occgroup
+	, g.ftptgroup
+	, g.skillgroup
+	, g.indgroup
+	, g.racegroup
+	, g.msagroup
 	, w.wagegroup
-from main m
+from groups g
 join wage_groups_trimmed w 
-	on m.personid = w.personid
-	and m.date_monthly = w.date_monthly;
+	on g.personid = w.personid
+	and g.date_monthly = w.date_monthly;
 
