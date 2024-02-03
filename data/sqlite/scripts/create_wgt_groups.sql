@@ -1,3 +1,11 @@
+/* 
+* Author: John Moore
+* Date: 2024-02-02
+* 
+* This script mimicks the Atlanta Fed's create_wgt_groups.do Stata script
+* for analyzing wage growth. It creates groups (dimensions) to slice the
+* data on.
+*/
 create table wgt_groups as
 with 
 	cps as (
@@ -17,6 +25,8 @@ with
 			/* wageperhr82 == wageperhrclean82 for all values; not sure why 'clean' exists */
 			, wageperhr82
 			, wageperhr82_tm12
+			/* Atlanta Fed uses average of wage and 12-month lag to create quartiles. */
+			, (wageperhr82 + wageperhr82_tm12) / 2 as wage_hr_avg
 			, paidhrly82
 			, paidhrly82_tm12
 			, wagegrowthtracker83
@@ -34,48 +44,23 @@ with
 		    , strftime('%m', date) as month
 		    , strftime('%Y-%m', date) as date_monthly
 		from cps_harmonized_longitudinally_matched
-		where age76 >= 16
+		where 
+			age76 >= 16
+			/* Wage observations present for current observation and 12-month lag of same person. */
+			and wagegrowthtracker83 is not null
 		order by date desc
 	),
 	/* Wage quartiles */
-	ranked_wages as (
+	wage_quartiles as (
 	    select
-	        date_monthly
-	        , wageperhr82
+	    	personid
+	        , date_monthly
 	        , ntile(4) over (
 	            partition by date_monthly
-	            order by wageperhr82
-	        ) as quartile
+	            order by wage_hr_avg
+	        ) as wagegroup
 	    from cps
-	    where wageperhr82 is not null
 	),
-	wage_quartiles as (
-		select
-		    date_monthly
-		    , quartile
-		    , min(wageperhr82) as quartile_start
-		    , max(wageperhr82) as quartile_end
-		from ranked_wages
-		group by date_monthly, quartile
-	),
-	wage_groups as (
-		select 
-			c.personid
-			, c.date_monthly
-			, c.wageperhr82
-			, case
-				when c.wageperhr82 between w.quartile_start and w.quartile_end
-				then w.quartile
-				else null
-			end as wagegroup
-		from cps c
-		join wage_quartiles w on c.date_monthly = w.date_monthly
-	),
-    wage_groups_trimmed as (
-    	select *
-    	from wage_groups
-    	where wagegroup is not null
-    ),
 	/* Create all groups */
 	groups as (
 		select 
@@ -184,7 +169,7 @@ select
 	, g.msagroup
 	, w.wagegroup
 from groups g
-join wage_groups_trimmed w 
+join wage_quartiles w 
 	on g.personid = w.personid
 	and g.date_monthly = w.date_monthly;
 
