@@ -7,13 +7,10 @@ dta_file_path = '/home/john/tlg/wagetracker/data/CPS_harmonized_variable_longitu
 # Define the path for the output .parquet file
 parquet_file_path = '/home/john/tlg/wagetracker/data/CPS_harmonized_variable_longitudinally_matched_age16plus.parquet'
 
-chunk_size = 100000  # Adjust based on your system's memory capacity
-print(f"Chunk size = {chunk_size}")
 table_schema = None  # To store the schema of our Parquet file
-
 writer = None
 try:
-    for i,chunk in enumerate(pd.read_stata(dta_file_path, chunksize=chunk_size, convert_categoricals=False)):
+    for i,chunk in enumerate(pd.read_stata(dta_file_path, chunksize=1000000, convert_categoricals=False)):
         print(f"Processing chunk #{i+1}")
 
         table = pa.Table.from_pandas(chunk)
