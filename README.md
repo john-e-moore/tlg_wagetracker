@@ -26,20 +26,20 @@ A Python installation and SQL client such as DBeaver.
 
 ## Usage
 #### Data Download
-----------------------------------------
 Download the 'Harmonized Variable and Longitudinally Matched [Atlanta Federal Reserve] (1976-Present)' dataset from [The Kansas City Fed's CPS page](https://cps.kansascityfed.org/) and move it to the 'data/' folder inside this project.
 
 The last updated timestamp is included on this page as well as other information about the CPS microdata.
+----------------------------------------
 
 #### SQLite Ingest
-----------------------------------------
 Running 'ingest/ingest_cps.py' will create a SQLite database (.db file) and a table called 'cps_harmonized_longitudinally_matched'.
+----------------------------------------
 
 #### Data Processing
-----------------------------------------
 In your SQL client, create a connection to the SQLite database you just created. Run the .sql script in the 'data/sqlite/indexes/' folder to create indexes on 'personid' and 'date_monthly' -- these are the columns you'll be grouping and sorting on.
 
 To create the groups (dimensions to be sliced on) run 'data/sqlite/scripts/create_wgt_groups.sql'. Then, to create the final analysis-ready dataset, run 'data/sqlite/scripts/create_wgt_unweighted.sql'.
+----------------------------------------
 
 ## File Structure
 Raw data and SQLite-related code is in 'data/'. The raw data ingest script is in  'ingest/'. The Stata scripts provided by the Atlanta Fed are in 'stata_scripts/'.
