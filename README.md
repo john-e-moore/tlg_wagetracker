@@ -10,6 +10,8 @@ The Atlanta Fed provides Stata resources -- a .dta file for the longitudinally m
 
 This project uses Python's Pandas library to write the .dta file contents into a SQLite database table. Once the data is ingested, two .sql scripts are run to process the data into analytics-ready format complete with groups like education level, wage quartile, and more.
 
+![Dashboard preview](/images/dashboard_preview.png "Dashboard preview")
+
 ## Getting Started
 ### Prerequisites
 A Python installation and SQL client such as DBeaver.
