@@ -39,4 +39,4 @@ In your SQL client, create a connection to the SQLite database you just created.
 To create the groups (dimensions to be sliced on) run 'data/sqlite/scripts/create_wgt_groups.sql'. Then, to create the final analysis-ready dataset, run 'data/sqlite/scripts/create_wgt_unweighted.sql'.
 
 ## File Structure
-Raw data and SQLite-related code is in 'data/'. The raw data ingest script is in  'ingest/'. The Stata scripts provided by the Atlanta Fed are in 'stata_scripts/'.
+Raw data is in 'data/'. The raw data ingest script is in  'ingest/'. The SQLite-related code is in 'sqlite/'. The Stata scripts provided by the Atlanta Fed as well as incomplete Python conversions are in 'archive/'.
