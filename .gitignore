@@ -1,4 +1,5 @@
 venv/
+ingest/config.yml
 pat.txt
 *.dta
 *.csv
