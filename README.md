@@ -6,7 +6,7 @@ From the [Atlanta Fed's Wage Growth Tracker](https://www.atlantafed.org/chcs/wag
 > change in the hourly wage of individuals observed 12 months apart. Our measure is based on methodology developed
 > by [colleagues at the San Francisco Fed](http://www.frbsf.org/economic-research/nominal-wage-rigidity/).
 
-The Atlanta Fed provides Stata resources -- a .dta file for the longitudinally matched microdata, and three .do files for processing the data into what you see on the Wage Growth Tracker page. The resources provided limit users to viewing wage growth based on median percent change in hourly wage of individuals. The code in this repository allows users to create a table with the necessary groups and then run whatever aggregations and analyses they want on top of it.
+The Atlanta Fed provides Stata resources -- a .dta file for the longitudinally matched microdata, and three .do files for processing the data into what you see on the Wage Growth Tracker page. The resources provided limit users to viewing wage growth based on median percent change in hourly wage of individuals. They also require a paid Stata license. The code in this repository allows users to create a table with the necessary groups and then run whatever aggregations and analyses they want on top of it, using free tools.
 
 This project uses Python's Pandas library to write the .dta file contents into a SQLite database table. Once the data is ingested, two .sql scripts are run to process the data into analytics-ready format complete with groups like education level, wage quartile, and more.
 
