@@ -1,12 +1,19 @@
-import pandas as pd
-import sqlite3
-from sqlalchemy import create_engine
-from ingest_utils import read_dta_write_sqlite
+import yaml
+from ingest_utils import dta_to_sqlite
+
+def load_config(config_path):
+    with open(config_path, 'r') as file:
+        return yaml.safe_load(file)
 
 if __name__ == "__main__":
-    dta_file_path = '/home/john/tlg/wagetracker/data/CPS_harmonized_variable_longitudinally_matched_age16plus.dta'
-    sqlite_db_path = '/home/john/tlg/wagetracker/data/tlg.db'
-    table_name = 'cps_harmonized_longitudinally_matched'
-    chunksize = 1000000
+    # Load config
+    config_path = 'path_to_config.yml'
+    config = load_config(config_path)
 
-    read_dta_write_sqlite(dta_file_path, sqlite_db_path, table_name, chunksize)
+    dta_file_path = config['dta_file_path']
+    sqlite_file_path = config['sqlite_file_path']
+    table_name = config['table_name']
+    chunksize = config['chunksize']
+
+    # Run ingest
+    dta_to_sqlite(dta_file_path, sqlite_file_path, table_name, chunksize)

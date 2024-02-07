@@ -1,0 +1,4 @@
+dta_file_path: path_to_dta_file.dta
+sqlite_file_path: path_to_sqlite_database.db
+table_name: cps_harmonized_longitudinally_matched
+chunksize: 1000000
