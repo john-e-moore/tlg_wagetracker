@@ -12,7 +12,7 @@ if __name__ == "__main__":
 
     dta_file_path = config['dta_file_path']
     sqlite_file_path = config['sqlite_file_path']
-    table_name = config['table_name']
+    table_name = config['dev_table_name']
     chunksize = config['chunksize']
 
     # Run ingest

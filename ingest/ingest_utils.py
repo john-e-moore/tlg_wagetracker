@@ -4,6 +4,38 @@ import pyarrow.parquet as pq
 import sqlite3
 from sqlalchemy import create_engine
 
+def upsert_dta_to_sqlite(
+    dta_file_path: str, 
+    sqlite_db_path: str, 
+    table_name: str, 
+    chunksize: int
+    ):
+    # Connect to SQLite database
+    conn = sqlite3.connect(sqlite_db_path)
+    cursor = conn.cursor()
+
+    rows_processed = 0
+    for chunk in pd.read_stata(dta_file_path, chunksize=chunksize, convert_categoricals=False):
+        # Dynamically create column names part and placeholders for VALUES
+        columns = ', '.join(chunk.columns)
+        placeholders = ', '.join(['?'] * len(chunk.columns))
+        # Upsert statement
+        upsert_sql = f"""
+            INSERT INTO {table_name} ({columns})
+            VALUES ({placeholders})
+            ON CONFLICT(obsid) DO UPDATE SET
+            {', '.join([f"{col}=excluded.{col}" for col in chunk.columns if col != 'obsid'])};
+        """
+        # Execute statement for each row
+        for row in chunk.itertuples(index=False, name=None):
+            cursor.execute(upsert_sql, row)
+        # Commit changes
+        conn.commit()
+        rows_processed += chunksize
+        print(f"{rows_processed} rows processed.")
+    # Close connection
+    conn.close()
+
 def dta_to_sqlite(
     dta_file_path: str, 
     sqlite_db_path: str, 
@@ -19,20 +51,17 @@ def dta_to_sqlite(
     # Read the .dta file in chunks
     # Note: without convert_categoricals=False, read_stata converts numerical columns
     # based on some info inside the .dta file
-    chunks_processed = 0
+    rows_processed = 0
     for chunk in pd.read_stata(dta_file_path, chunksize=chunksize, convert_categoricals=False):
         if not table_created:
-            print(chunk.describe())
-            chunk.describe().to_csv('chunk_describe.csv')
-            chunk.head(100).to_csv('chunk_preview.csv')
             # If table doesn't exist, create it
             chunk.to_sql(table_name, con=engine, if_exists='replace', index=False)
             table_created = True
         else:
             # Append subsequent chunks to the table
             chunk.to_sql(table_name, con=engine, if_exists='append', index=False)
-        chunks_processed += chunksize
-        print(f"{chunks_processed} processed.")
+        rows_processed += chunksize
+        print(f"{rows_processed} rows processed.")
     
     print(f"Data has been successfully loaded into the {table_name} table in the SQLite database.")
 
