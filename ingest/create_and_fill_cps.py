@@ -7,7 +7,7 @@ def load_config(config_path):
 
 if __name__ == "__main__":
     # Load config
-    config_path = 'path_to_config.yml'
+    config_path = 'config.yml'
     config = load_config(config_path)
 
     dta_file_path = config['dta_file_path']

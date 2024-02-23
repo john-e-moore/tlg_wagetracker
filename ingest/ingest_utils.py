@@ -4,6 +4,47 @@ import pyarrow.parquet as pq
 import sqlite3
 from sqlalchemy import create_engine
 
+def insert_recent_records_dta_to_sqlite(
+    dta_file_path: str, 
+    sqlite_db_path: str, 
+    table_name: str, 
+    chunksize: int
+    ):
+    """
+    Check table for most recent records and only insert new records. 
+    The assumption in this approach is that old records are static.
+    """
+    # Connect to SQLite database
+    conn = sqlite3.connect(sqlite_db_path)
+    cursor = conn.cursor()
+
+    # Find date of most recent record
+    sql = f"SELECT MAX(date) FROM {table_name};"
+    cursor.execute(sql)
+    result = cursor.fetchone()[0]
+    most_recent_record = pd.to_datetime(result)
+    print(f"Most recent record: {most_recent_record}")
+
+    # Process chunks
+    rows_processed = 0
+    for chunk in pd.read_stata(dta_file_path, chunksize=chunksize, convert_categoricals=False):
+        # Filter chunk to only new records
+        chunk = chunk[chunk['date'] > most_recent_record]
+        if chunk.empty:
+            print("No new records in chunk, continuing...")
+            continue
+        else:
+            print(f"New records found. Processing {len(chunk)} new records...")
+        # Append new records
+        chunk.to_sql(table_name, con=conn, if_exists='append', index=False)
+        rows_processed += len(chunk)
+        print(f"{rows_processed} records processed.")
+    # Close connection
+    conn.close()
+
+################################################################################
+################################################################################
+
 def upsert_dta_to_sqlite(
     dta_file_path: str, 
     sqlite_db_path: str, 
@@ -36,6 +77,9 @@ def upsert_dta_to_sqlite(
     # Close connection
     conn.close()
 
+################################################################################
+################################################################################
+    
 def dta_to_sqlite(
     dta_file_path: str, 
     sqlite_db_path: str, 
