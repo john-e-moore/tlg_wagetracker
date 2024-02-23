@@ -6,3 +6,4 @@ pat.txt
 *.parquet
 *.db
 *explore.py
+*__pycache__*
